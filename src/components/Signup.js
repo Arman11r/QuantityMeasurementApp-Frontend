@@ -1,47 +1,72 @@
 import React, { useState } from "react";
+import { registerUser } from "../services/api";
+import "./Auth.css";
 
 function Signup({ switchToLogin }) {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const handleSignup = async (e) => {
         e.preventDefault();
-
-        await fetch("http://localhost:8080/auth/signup", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ username, password })
-        });
-
-        alert("Signup Successful ✅");
-        switchToLogin();
+        setLoading(true);
+        setError("");
+        try {
+            await registerUser({ username, password });
+            alert("Account created successfully! Please sign in.");
+            switchToLogin();
+        } catch (err) {
+            setError(err.message || "Signup failed. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <div>
-            <h2>Signup</h2>
+        <div className="auth-page">
+            <div className="auth-card">
+                <div className="auth-logo">Quanment</div>
+                <h2 className="auth-title">Create Account</h2>
+                <p className="auth-subtitle">Join us to start converting quantities</p>
 
-            <form onSubmit={handleSignup}>
-                <input
-                    placeholder="Username"
-                    onChange={(e) => setUsername(e.target.value)}
-                />
+                {error && <div className="auth-error">{error}</div>}
 
-                <input
-                    type="password"
-                    placeholder="Password"
-                    onChange={(e) => setPassword(e.target.value)}
-                />
+                <form className="auth-form" onSubmit={handleSignup}>
+                    <div className="form-group">
+                        <label>Username</label>
+                        <input
+                            id="signup-username"
+                            type="text"
+                            placeholder="Choose a username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Password</label>
+                        <input
+                            id="signup-password"
+                            type="password"
+                            placeholder="Create a password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
 
-                <button type="submit">Signup</button>
-            </form>
+                    <button id="signup-submit" type="submit" className="btn-primary" disabled={loading}>
+                        {loading ? "Creating Account..." : "Create Account"}
+                    </button>
+                </form>
 
-            <p onClick={switchToLogin} style={{cursor:"pointer"}}>
-                Go to Login
-            </p>
+                <p className="auth-switch">
+                    Already have an account?{" "}
+                    <span id="go-to-login" onClick={switchToLogin}>Sign in</span>
+                </p>
+            </div>
         </div>
     );
 }

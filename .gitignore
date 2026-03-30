@@ -5,6 +5,7 @@ node_modules/
 build/
 dist/
 .idea/
+.idea 
 
 # Logs
 npm-debug.log*

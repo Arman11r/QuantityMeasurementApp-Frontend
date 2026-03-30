@@ -145,6 +145,67 @@
     transition: color 0.2s;
 }
 
+/* OPERATION SECTION */
+.operation-section {
+    margin-bottom: 36px;
+}
+
+.operation-pills {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.op-pill {
+    background: white;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.op-pill:hover {
+    background: #f8f9fa;
+    border-color: #ccc;
+}
+
+.op-pill.active {
+    background: #4169e1;
+    color: white;
+    border-color: #4169e1;
+    box-shadow: 0 4px 12px rgba(65, 105, 225, 0.25);
+}
+
+.op-sign {
+    font-size: 24px;
+    font-weight: 700;
+    color: #aaa;
+}
+
+/* RESULT SECTION */
+.result-section {
+    margin-top: 24px;
+}
+
+.result-display-box {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    border: 1.5px solid #ebebeb;
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+}
+
 /* CONVERSION SECTION */
 .conversion-section {
     display: flex;

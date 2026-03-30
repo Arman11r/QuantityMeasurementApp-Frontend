@@ -4,16 +4,36 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
+    overflow: hidden;
     background: #f0f2f5;
 }
 
+.auth-page::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: var(--bg-image) no-repeat center center;
+    background-size: cover;
+    filter: blur(5px);
+    z-index: 0;
+}
+
 .auth-card {
-    background: white;
+    position: relative;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
     border-radius: 16px;
     padding: 44px 40px;
     width: 100%;
     max-width: 420px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
 }
 
 .auth-logo {
@@ -33,7 +53,7 @@
 
 .auth-subtitle {
     font-size: 14px;
-    color: #888;
+    color: #000;
     margin-bottom: 28px;
 }
 
@@ -62,19 +82,19 @@
 .auth-form input {
     width: 100%;
     padding: 11px 14px;
-    border: 1.5px solid #e0e0e0;
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
     border-radius: 10px;
     font-size: 14px;
     color: #1a1a1a;
-    background: #fafafa;
+    background: rgba(255, 255, 255, 0.6);
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, background 0.2s;
     box-sizing: border-box;
 }
 
 .auth-form input:focus {
     border-color: #4169e1;
-    background: white;
+    background: rgba(255, 255, 255, 0.9);
 }
 
 .btn-primary {
@@ -121,9 +141,9 @@
 .btn-google {
     width: 100%;
     padding: 11px;
-    background: white;
+    background: rgba(255, 255, 255, 0.6);
     color: #333;
-    border: 1.5px solid #e0e0e0;
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
     border-radius: 10px;
     font-size: 14px;
     font-weight: 500;
@@ -136,7 +156,7 @@
 }
 
 .btn-google:hover {
-    background: #f5f5f5;
+    background: rgba(255, 255, 255, 0.9);
     border-color: #ccc;
 }
 
@@ -144,12 +164,12 @@
     text-align: center;
     margin-top: 20px;
     font-size: 14px;
-    color: #666;
+    color: #000;
 }
 
 .auth-switch span {
-    color: #4169e1;
-    font-weight: 600;
+    color: #003399;
+    font-weight: 700;
     cursor: pointer;
 }
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { convert } from "../services/api";
+import { performOperation } from "../services/api";
 import "./Converter.css";
 
 const UNIT_MAP = {
@@ -7,6 +7,7 @@ const UNIT_MAP = {
     "Inches": "INCHES",
     "Yards": "YARDS",
     "Centimetres": "CENTIMETERS",
+    "Meters": "METER",
 
     "Celsius": "CELSIUS",
     "Fahrenheit": "FAHRENHEIT",
@@ -14,13 +15,18 @@ const UNIT_MAP = {
 
     "Litres": "LITRE",
     "Millilitres": "MILLILITRE",
-    "Gallons": "GALLON"
+    "Gallons": "GALLON",
+
+    "Grams": "GRAM",
+    "Kilograms": "KILOGRAM",
+    "Pounds": "POUND"
 };
 
 const MEASUREMENT_TYPE_MAP = {
     "LENGTH": "LengthUnit",
     "TEMPERATURE": "TemperatureUnit",
-    "VOLUME": "VolumeUnit"
+    "VOLUME": "VolumeUnit",
+    "WEIGHT": "WeightUnit"
 };
 
 const TYPES = [
@@ -42,7 +48,7 @@ const TYPES = [
         activeColor: "#00c9a7",
         activeBg: "#e8fff8",
         activeBorder: "#00c9a7",
-        units: ["Feet", "Inches", "Yards", "Centimetres"]
+        units: ["Feet", "Inches", "Yards", "Centimetres", "Meters"]
     },
     {
         id: "TEMPERATURE",
@@ -77,19 +83,38 @@ const TYPES = [
         activeBg: "#f3f0ff",
         activeBorder: "#7c5cbf",
         units: ["Litres", "Millilitres", "Gallons"]
+    },
+    {
+        id: "WEIGHT",
+        label: "Weight",
+        icon: (active) => (
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <path d="M18 14 H30 L34 38 H14 Z" fill={active ? "#f59e0b" : "#ccc"} fillOpacity="0.2" stroke={active ? "#f59e0b" : "#bbb"} strokeWidth="1.5" strokeLinejoin="round" />
+                <path d="M22 14 V8 Q24 5 26 8 V14" stroke={active ? "#f59e0b" : "#bbb"} strokeWidth="1.5" fill="none" />
+                <circle cx="24" cy="26" r="3" fill={active ? "#f59e0b" : "#aaa"} />
+            </svg>
+        ),
+        activeColor: "#f59e0b",
+        activeBg: "#fffbeb",
+        activeBorder: "#f59e0b",
+        units: ["Grams", "Kilograms", "Pounds"]
     }
 ];
 
 const DEFAULT_UNITS = {
     LENGTH: { from: "Feet", to: "Inches" },
     TEMPERATURE: { from: "Celsius", to: "Fahrenheit" },
-    VOLUME: { from: "Litres", to: "Millilitres" }
+    VOLUME: { from: "Litres", to: "Millilitres" },
+    WEIGHT: { from: "Kilograms", to: "Grams" }
 };
 
 function Converter({ onNavigateHistory, onLogout }) {
+    const [operation, setOperation] = useState("CONVERT");
     const [selectedType, setSelectedType] = useState("TEMPERATURE");
     const [fromValue, setFromValue] = useState("0");
     const [toValue, setToValue] = useState("");
+    const [value2, setValue2] = useState("0");
+    const [mathResult, setMathResult] = useState("");
     const [fromUnit, setFromUnit] = useState("Celsius");
     const [toUnit, setToUnit] = useState("Fahrenheit");
     const [loading, setLoading] = useState(false);
@@ -103,29 +128,52 @@ function Converter({ onNavigateHistory, onLogout }) {
         setToUnit(defaults.to);
         setFromValue("0");
         setToValue("");
+        setValue2("0");
+        setMathResult("");
     };
 
-    const handleConvert = useCallback(async (val, fUnit, tUnit, type) => {
-        const numVal = parseFloat(val);
-        if (isNaN(numVal)) {
+    const handleCalculate = useCallback(async (v1, v2, fUnit, tUnit, type, op) => {
+        const num1 = parseFloat(v1);
+        const num2 = parseFloat(v2);
+
+        if (op === "CONVERT" && isNaN(num1)) {
             setToValue("");
+            return;
+        } else if (op !== "CONVERT" && (isNaN(num1) || isNaN(num2))) {
+            setMathResult("");
             return;
         }
 
         setLoading(true);
         try {
-            const result = await convert({
+            const result = await performOperation(op, {
                 fromUnit: UNIT_MAP[fUnit],
                 toUnit: UNIT_MAP[tUnit],
-                value: numVal,
+                value1: num1,
+                value2: op === "CONVERT" ? 0 : num2,
                 measurementType: MEASUREMENT_TYPE_MAP[type]
             });
 
-            // Response QuantityMeasurementDTO uses `resultValue`
-            setToValue(result.resultValue);
+            if (op === "CONVERT") {
+                setToValue(result.resultValue);
+            } else if (op === "COMPARE") {
+                // Backend compare returns "true" or "false" in resultString
+                if (result.resultString === "true") {
+                    setMathResult("Values are Equal");
+                } else if (result.resultString === "false") {
+                    setMathResult("Values are Not Equal");
+                } else if (result.message) {
+                    setMathResult(result.message);
+                } else {
+                    setMathResult("Unknown comparison result");
+                }
+            } else {
+                setMathResult(String(result.resultValue));
+            }
         } catch (err) {
-            console.error("Convert error:", err.message);
-            setToValue("Error");
+            console.error(`${op} error:`, err.message);
+            if (op === "CONVERT") setToValue("Error");
+            else setMathResult("Error");
         } finally {
             setLoading(false);
         }
@@ -133,10 +181,10 @@ function Converter({ onNavigateHistory, onLogout }) {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            handleConvert(fromValue, fromUnit, toUnit, selectedType);
+            handleCalculate(fromValue, value2, fromUnit, toUnit, selectedType, operation);
         }, 400);
         return () => clearTimeout(timer);
-    }, [fromValue, fromUnit, toUnit, selectedType, handleConvert]);
+    }, [fromValue, value2, fromUnit, toUnit, selectedType, operation, handleCalculate]);
 
     return (
         <div className="converter-page">
@@ -183,11 +231,30 @@ function Converter({ onNavigateHistory, onLogout }) {
                     </div>
                 </div>
 
+                {/* OPERATION SELECTOR */}
+                <div className="operation-section">
+                    <p className="section-label">CHOOSE OPERATION</p>
+                    <div className="operation-pills">
+                        {["CONVERT", "COMPARE", "ADD", "SUBTRACT", "DIVIDE"].map(op => (
+                            <button
+                                key={op}
+                                className={`op-pill ${operation === op ? "active" : ""}`}
+                                onClick={() => {
+                                    setOperation(op);
+                                    setMathResult("");
+                                }}
+                            >
+                                {op}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
                 {/* CONVERSION INPUTS */}
                 <div className="conversion-section">
-                    {/* FROM */}
+                    {/* FROM / VALUE 1 */}
                     <div className="conversion-box">
-                        <p className="box-label">FROM</p>
+                        <p className="box-label">{operation === "CONVERT" ? "FROM" : "VALUE 1"}</p>
                         <div className="input-box">
                             <input
                                 id="from-value"
@@ -209,21 +276,39 @@ function Converter({ onNavigateHistory, onLogout }) {
                         </div>
                     </div>
 
-                    {/* SWAP ICON */}
+                    {/* SWAP ICON / OP ICON */}
                     <div className="swap-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M7 16L3 12M3 12L7 8M3 12H21" stroke="#aaa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M17 8L21 12M21 12L17 16M21 12H3" stroke="#aaa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
+                        {operation === "CONVERT" || operation === "COMPARE" ? (
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M7 16L3 12M3 12L7 8M3 12H21" stroke="#aaa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M17 8L21 12M21 12L17 16M21 12H3" stroke="#aaa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        ) : (
+                            <div className="op-sign">
+                                {operation === "ADD" && "+"}
+                                {operation === "SUBTRACT" && "-"}
+                                {operation === "DIVIDE" && "÷"}
+                            </div>
+                        )}
                     </div>
 
-                    {/* TO */}
+                    {/* TO / VALUE 2 */}
                     <div className="conversion-box">
-                        <p className="box-label">TO</p>
+                        <p className="box-label">{operation === "CONVERT" ? "TO" : "VALUE 2"}</p>
                         <div className="input-box">
-                            <div className="value-display">
-                                {loading ? <span className="loading-dots">...</span> : (toValue !== "" ? toValue : "—")}
-                            </div>
+                            {operation === "CONVERT" ? (
+                                <div className="value-display">
+                                    {loading ? <span className="loading-dots">...</span> : (toValue !== "" ? toValue : "—")}
+                                </div>
+                            ) : (
+                                <input
+                                    id="to-value"
+                                    type="number"
+                                    className="value-input"
+                                    value={value2}
+                                    onChange={(e) => setValue2(e.target.value)}
+                                />
+                            )}
                             <select
                                 id="to-unit"
                                 className="unit-select"
@@ -237,6 +322,16 @@ function Converter({ onNavigateHistory, onLogout }) {
                         </div>
                     </div>
                 </div>
+
+                {/* RESULT BOX FOR MATH OR COMPARE */}
+                {operation !== "CONVERT" && (
+                    <div className="result-section">
+                        <p className="section-label">RESULT</p>
+                        <div className="result-display-box">
+                            {loading ? <span className="loading-dots">Computing...</span> : (mathResult ? mathResult : "—")}
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );

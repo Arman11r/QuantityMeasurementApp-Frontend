@@ -25,9 +25,9 @@ function Signup({ switchToLogin }) {
     };
 
     return (
-        <div className="auth-page">
+        <div className="auth-page" style={{ "--bg-image": `url(${process.env.PUBLIC_URL}/bg.gif)` }}>
             <div className="auth-card">
-                <div className="auth-logo">Quanment</div>
+                <div className="auth-logo">QuantityMeasurement</div>
                 <h2 className="auth-title">Create Account</h2>
                 <p className="auth-subtitle">Join us to start converting quantities</p>
 

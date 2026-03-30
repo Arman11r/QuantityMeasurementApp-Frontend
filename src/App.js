@@ -13,8 +13,21 @@ const PAGE_HISTORY = "history";
 function App() {
     const [page, setPage] = useState(PAGE_LOGIN);
 
-    // On mount, check if already logged in
+    // On mount, check if already logged in or returning from OAuth
     useEffect(() => {
+        // Handle OAuth success redirect
+        if (window.location.pathname === '/oauth-success') {
+            const params = new URLSearchParams(window.location.search);
+            const urlToken = params.get('token');
+            if (urlToken) {
+                localStorage.setItem('token', urlToken);
+            }
+            // Clear the URL so we are back at the root path visually
+            window.history.replaceState({}, document.title, '/');
+            setPage(PAGE_CONVERTER);
+            return;
+        }
+
         const token = localStorage.getItem("token");
         if (token) {
             setPage(PAGE_CONVERTER);

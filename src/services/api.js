@@ -1,5 +1,4 @@
-const BASE_URL = "http://localhost:8080/api/v1/quantities";
-
+const BASE_URL = "http://13.203.97.71:8080/measure";
 const getAuthHeaders = () => {
     const token = localStorage.getItem("token");
     return {
@@ -9,7 +8,7 @@ const getAuthHeaders = () => {
 };
 
 export const loginUser = async (data) => {
-    const res = await fetch("http://localhost:8080/auth/login", {
+    const res = await fetch("http://13.203.97.71:8080/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
@@ -20,7 +19,7 @@ export const loginUser = async (data) => {
 };
 
 export const registerUser = async (data) => {
-    const res = await fetch("http://localhost:8080/auth/register", {
+    const res = await fetch("http://13.203.97.71:8080/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
@@ -30,20 +29,20 @@ export const registerUser = async (data) => {
     return text;
 };
 
-// measurementType must be: "LengthUnit" | "VolumeUnit" | "TemperatureUnit"
-export const convert = async ({ fromUnit, toUnit, value, measurementType }) => {
-    const res = await fetch(`${BASE_URL}/convert`, {
+export const performOperation = async (operation, { fromUnit, toUnit, value1, value2, measurementType }) => {
+    const endpoint = operation.toLowerCase(); // convert, compare, add, subtract, divide
+    const res = await fetch(`${BASE_URL}/${endpoint}`, {
         method: "POST",
         headers: getAuthHeaders(),
         body: JSON.stringify({
             thisQuantityDTO: {
-                value: value,
-                unit: fromUnit,
+                value: value1 || 0,
+                unit: fromUnit ? fromUnit.trim().toUpperCase() : fromUnit,
                 measurementType: measurementType
             },
             thatQuantityDTO: {
-                value: 0,
-                unit: toUnit,
+                value: value2 || 0,
+                unit: toUnit ? toUnit.trim().toUpperCase() : toUnit,
                 measurementType: measurementType
             }
         })
@@ -54,7 +53,16 @@ export const convert = async ({ fromUnit, toUnit, value, measurementType }) => {
         throw new Error(err);
     }
 
-    return res.json(); // returns QuantityMeasurementDTO — use .resultValue
+    return res.json(); // returns QuantityMeasurementDTO
+};
+
+// Legacy support for older Converter calls if needed
+export const convert = async (params) => {
+    return performOperation('convert', {
+        ...params,
+        value1: params.value,
+        value2: 0
+    });
 };
 
 // Controller endpoints: /history/operation/{op}  /history/type/{type}  /history/errors

@@ -1,4 +1,4 @@
-const BASE_URL = "http://13.203.97.71:8080/measure";
+const BASE_URL = "https://quantitymeasurementapp-backend-springboot.onrender.com/api/v1/quantities";
 const getAuthHeaders = () => {
     const token = localStorage.getItem("token");
     return {
@@ -8,7 +8,7 @@ const getAuthHeaders = () => {
 };
 
 export const loginUser = async (data) => {
-    const res = await fetch("http://13.203.97.71:8080/auth/login", {
+    const res = await fetch("https://quantitymeasurementapp-backend-springboot.onrender.com/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
@@ -19,7 +19,7 @@ export const loginUser = async (data) => {
 };
 
 export const registerUser = async (data) => {
-    const res = await fetch("http://13.203.97.71:8080/auth/register", {
+    const res = await fetch("https://quantitymeasurementapp-backend-springboot.onrender.com/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
@@ -30,7 +30,7 @@ export const registerUser = async (data) => {
 };
 
 export const performOperation = async (operation, { fromUnit, toUnit, value1, value2, measurementType }) => {
-    const endpoint = operation.toLowerCase(); // convert, compare, add, subtract, divide
+    const endpoint = operation.toLowerCase();
     const res = await fetch(`${BASE_URL}/${endpoint}`, {
         method: "POST",
         headers: getAuthHeaders(),
@@ -53,10 +53,9 @@ export const performOperation = async (operation, { fromUnit, toUnit, value1, va
         throw new Error(err);
     }
 
-    return res.json(); // returns QuantityMeasurementDTO
+    return res.json();
 };
 
-// Legacy support for older Converter calls if needed
 export const convert = async (params) => {
     return performOperation('convert', {
         ...params,
@@ -65,7 +64,6 @@ export const convert = async (params) => {
     });
 };
 
-// Controller endpoints: /history/operation/{op}  /history/type/{type}  /history/errors
 export const getHistory = async () => {
     const res = await fetch(`${BASE_URL}/history/operation/CONVERT`, {
         method: "GET",

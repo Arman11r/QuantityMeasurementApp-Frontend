@@ -25,7 +25,7 @@ function Login({ switchToSignup, onLoginSuccess }) {
     };
 
     const handleGoogleLogin = () => {
-        window.location.href = "http://localhost:8080/oauth2/authorization/google";
+        window.location.href = "https://quantitymeasurementapp-backend-springboot.onrender.com/oauth2/authorization/google";
     };
 
     return (

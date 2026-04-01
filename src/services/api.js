@@ -65,10 +65,13 @@ export const convert = async (params) => {
 };
 
 export const getHistory = async () => {
-    const res = await fetch(`${BASE_URL}/history/operation/CONVERT`, {
-        method: "GET",
-        headers: getAuthHeaders()
-    });
+    const res = await fetch(
+        `https://quantitymeasurementapp-backend-springboot.onrender.com/api/v1/quantities/history/me`,
+        {
+            method: "GET",
+            headers: getAuthHeaders()
+        }
+    );
     if (!res.ok) throw new Error("Failed to fetch history");
     return res.json();
 };

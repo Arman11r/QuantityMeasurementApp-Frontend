@@ -3,9 +3,9 @@ import { getHistory } from "../services/api";
 import "./Converter.css";
 
 const TYPE_COLORS = {
-    "LengthUnit":      "#00c9a7",
+    "LengthUnit": "#00c9a7",
     "TemperatureUnit": "#ff6b6b",
-    "VolumeUnit":      "#7c5cbf"
+    "VolumeUnit": "#7c5cbf"
 };
 
 function History({ onBack, onLogout }) {

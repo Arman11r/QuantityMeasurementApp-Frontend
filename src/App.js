@@ -4,46 +4,63 @@ import Signup from "./components/Signup";
 import Converter from "./components/Converter";
 import History from "./components/History";
 
-// Pages
 const PAGE_LOGIN = "login";
 const PAGE_SIGNUP = "signup";
 const PAGE_CONVERTER = "converter";
 const PAGE_HISTORY = "history";
 
 function App() {
-    const [page, setPage] = useState(PAGE_LOGIN);
+    const [page, setPage] = useState(PAGE_CONVERTER);
+    const [redirectAfterLogin, setRedirectAfterLogin] = useState(null);
 
-    // On mount, check if already logged in or returning from OAuth
     useEffect(() => {
-        // Handle OAuth success redirect
         if (window.location.pathname === '/oauth-success') {
             const params = new URLSearchParams(window.location.search);
             const urlToken = params.get('token');
             if (urlToken) {
                 localStorage.setItem('token', urlToken);
             }
-            // Clear the URL so we are back at the root path visually
             window.history.replaceState({}, document.title, '/');
-            setPage(PAGE_CONVERTER);
-            return;
-        }
-
-        const token = localStorage.getItem("token");
-        if (token) {
-            setPage(PAGE_CONVERTER);
+            setPage(PAGE_HISTORY);
+            setRedirectAfterLogin(null);
         }
     }, []);
 
     const handleLogout = () => {
         localStorage.removeItem("token");
+        setPage(PAGE_CONVERTER);
+    };
+
+    // Guest clicks Login button in navbar
+    const handleGoToLogin = () => {
         setPage(PAGE_LOGIN);
+    };
+
+    // User clicks History button
+    const handleNavigateHistory = () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            setRedirectAfterLogin(PAGE_HISTORY);
+            setPage(PAGE_LOGIN);
+        } else {
+            setPage(PAGE_HISTORY);
+        }
+    };
+
+    // After successful login/signup
+    const handleLoginSuccess = () => {
+        const dest = redirectAfterLogin || PAGE_CONVERTER;
+        setRedirectAfterLogin(null);
+        setPage(dest);
     };
 
     if (page === PAGE_LOGIN) {
         return (
             <Login
                 switchToSignup={() => setPage(PAGE_SIGNUP)}
-                onLoginSuccess={() => setPage(PAGE_CONVERTER)}
+                onLoginSuccess={handleLoginSuccess}
+                onBack={() => setPage(PAGE_CONVERTER)}
+                redirectingToHistory={redirectAfterLogin === PAGE_HISTORY}
             />
         );
     }
@@ -52,6 +69,7 @@ function App() {
         return (
             <Signup
                 switchToLogin={() => setPage(PAGE_LOGIN)}
+                onSignupSuccess={handleLoginSuccess}
             />
         );
     }
@@ -65,11 +83,12 @@ function App() {
         );
     }
 
-    // Default: converter
+    // Default: Converter — works for guests, history not saved
     return (
         <Converter
-            onNavigateHistory={() => setPage(PAGE_HISTORY)}
+            onNavigateHistory={handleNavigateHistory}
             onLogout={handleLogout}
+            onLogin={handleGoToLogin}
         />
     );
 }

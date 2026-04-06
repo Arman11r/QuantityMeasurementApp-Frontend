@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { loginUser } from "../services/api";
 import "./Auth.css";
 
-function Login({ switchToSignup, onLoginSuccess }) {
+function Login({ switchToSignup, onLoginSuccess, onBack, redirectingToHistory }) {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -33,7 +33,15 @@ function Login({ switchToSignup, onLoginSuccess }) {
             <div className="auth-card">
                 <div className="auth-logo">QuantityMeasurement</div>
                 <h2 className="auth-title">Welcome Back</h2>
-                <p className="auth-subtitle">Sign in to continue converting</p>
+
+                {/* Context-aware subtitle */}
+                {redirectingToHistory ? (
+                    <p className="auth-subtitle auth-subtitle-highlight">
+                        🔒 Please sign in to view your conversion history
+                    </p>
+                ) : (
+                    <p className="auth-subtitle">Sign in to save and view your history</p>
+                )}
 
                 {error && <div className="auth-error">{error}</div>}
 
@@ -82,6 +90,19 @@ function Login({ switchToSignup, onLoginSuccess }) {
                     Don't have an account?{" "}
                     <span id="go-to-signup" onClick={switchToSignup}>Sign up</span>
                 </p>
+
+                {/* Back to converter link — always visible */}
+                {onBack && (
+                    <p className="auth-switch" style={{ marginTop: "8px" }}>
+                        <span
+                            id="back-to-converter"
+                            onClick={onBack}
+                            style={{ color: "#aaa", fontSize: "13px", cursor: "pointer" }}
+                        >
+                            ← Back to Converter
+                        </span>
+                    </p>
+                )}
             </div>
         </div>
     );

@@ -176,3 +176,14 @@
 .auth-switch span:hover {
     text-decoration: underline;
 }
+
+/* Highlight subtitle when redirected from a protected page */
+.auth-subtitle-highlight {
+    color: #e07b00;
+    font-weight: 500;
+    background: #fff8ee;
+    border: 1px solid #fcd89a;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 4px;
+}

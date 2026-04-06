@@ -108,7 +108,8 @@ const DEFAULT_UNITS = {
     WEIGHT: { from: "Kilograms", to: "Grams" }
 };
 
-function Converter({ onNavigateHistory, onLogout }) {
+function Converter({ onNavigateHistory, onLogout, onLogin }) {
+    const isLoggedIn = !!localStorage.getItem("token");
     const [operation, setOperation] = useState("CONVERT");
     const [selectedType, setSelectedType] = useState("TEMPERATURE");
     const [fromValue, setFromValue] = useState("0");
@@ -193,7 +194,10 @@ function Converter({ onNavigateHistory, onLogout }) {
                 <div className="navbar-logo">Quantity Measurement</div>
                 <div className="navbar-actions">
                     <button id="nav-history" className="nav-history-btn" onClick={onNavigateHistory}>History</button>
-                    <button id="nav-logout" className="nav-logout-btn" onClick={onLogout}>Logout</button>
+                    {isLoggedIn
+                        ? <button id="nav-logout" className="nav-logout-btn" onClick={onLogout}>Logout</button>
+                        : <button id="nav-login" className="nav-logout-btn" onClick={onLogin}>Login</button>
+                    }
                 </div>
             </nav>
 

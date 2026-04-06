@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { registerUser } from "../services/api";
+import { registerUser, loginUser } from "../services/api";
 import "./Auth.css";
 
-function Signup({ switchToLogin }) {
+function Signup({ switchToLogin, onSignupSuccess }) {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -15,8 +15,20 @@ function Signup({ switchToLogin }) {
         setError("");
         try {
             await registerUser({ username, password });
-            alert("Account created successfully! Please sign in.");
-            switchToLogin();
+            // Auto-login after successful signup so they land on their destination
+            try {
+                const token = await loginUser({ username, password });
+                localStorage.setItem("token", token);
+                if (onSignupSuccess) {
+                    onSignupSuccess(); // redirects to history if that was the trigger
+                } else {
+                    switchToLogin();
+                }
+            } catch {
+                // Auto-login failed — just go to login page
+                alert("Account created! Please sign in.");
+                switchToLogin();
+            }
         } catch (err) {
             setError(err.message || "Signup failed. Please try again.");
         } finally {
@@ -29,7 +41,7 @@ function Signup({ switchToLogin }) {
             <div className="auth-card">
                 <div className="auth-logo">QuantityMeasurement</div>
                 <h2 className="auth-title">Create Account</h2>
-                <p className="auth-subtitle">Join us to start converting quantities</p>
+                <p className="auth-subtitle">Sign up to save your conversion history</p>
 
                 {error && <div className="auth-error">{error}</div>}
 
